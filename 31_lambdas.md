@@ -1,0 +1,41 @@
+## lambdas
+- terminology
+	- lambda expression is an expression
+		- part of the source code
+		- compile time entity
+	- closure is the runtime object created by a lambda
+		- holds copies or references to captured data
+		- runtime entity
+	- closure class is a class a closure is instantiated from
+		- each lambda causes generation of unique closure class
+		- compile time entity
+- capture modes
+	- avoid default capture (i.e. [&] and [=])
+		- instead list captures explicitly
+	- by reference
+		- can lead to dangling references
+		- reference to a local variable or parameter in the lambda definition scope
+	- by value
+		- captured pointer could be deleted outside
+		- illusion of being able to capture all variables
+			- static storage duration objects can be used in lambda but not captured
+- explicit capture
+	- inside classes, "this" pointer is captured with [=] default mode
+		- lifetime of closure limited to lifetime of this object
+		- member gets replaced with this->member implicitly
+	- instead, create a local copy and then copy that copy
+		- auto divisorCopy = divisor;
+		- filters.emplace_back([divisorCopy](int value){ return value % divisorCopy == 0; });
+- init capture
+	- expressive C++14 capture mode that can do anything
+	- [closure_member = expr]
+		- the scope on the left is in the closure class
+		- the scope on the right is the enclosing scope
+		- [pw = std::make_unique<Widget>()]
+- prefer over bind
+	- more readable
+	- arguments are naturally resolved at call time rather than bind time
+		- bind has to nest binds to defer argument evaluation
+	- overload resolution
+		- bind doesn't know which overload to call by default
+		- requires casting to proper function pointer type

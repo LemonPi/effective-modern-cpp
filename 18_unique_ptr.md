@@ -1,0 +1,11 @@
+## unique_ptr
+- exclusive resource ownership
+- usually same size as pointer and same operation speed
+- can have custom deleters
+	- 2nd argument to constructor
+	- deleter part of pointer type
+		- use decltype to get type
+	- can increase unique_ptr size
+		- stateless function objects like lambdas with no capture don't change size
+		- functions increase size by at least function pointer size
+- converts implictly to shared_ptr

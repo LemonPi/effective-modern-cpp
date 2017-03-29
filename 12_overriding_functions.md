@@ -1,0 +1,18 @@
+## overriding functions
+- overriding conditions
+	- base class method is virtual
+		- "virtual" keyword for derived methods are optional 
+	- base and derived function names are identical
+	- base and derived parameter types are identical
+	- base and derived constness are identical
+	- base and derived return types and exception specifications are **compatible**
+	- base and derived reference qualifiers must be identical (C++11)
+		- restricts usage to lvalues only or to rvalues only
+		- void doWork()&;
+			- only applies when *this is an lvalue
+		- void doWork()&&;
+			- only applies when *this is an rvalue
+- apply "override" keyword to elicit compiler complaints on incorrectly overriding methods
+	- only applies at the end of method declaration
+	- contextual in that legacy code can have override as method name
+		- backward compatibility reasons

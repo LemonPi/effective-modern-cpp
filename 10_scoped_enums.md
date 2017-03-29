@@ -1,0 +1,18 @@
+## scoped enums
+- C++98 enum names belong to the scope containing the enum rather than the enum itself
+	- need to make sure no conflicting names in surrounding scope
+	- difficult to do in global scope
+- scoped enums (enum class) keep names in enum scope
+- are strongly typed
+	- unscoped enums implicitly convert to integral type and from there to floating point
+		- enum Color {black, white, red}; Color c = red; if (c < 14.5) {...} is valid
+	- no implicit conversions to any other type
+- can be forward declared
+	- unscoped enums have their underlying type selected based on max value
+		- compilers optimize for memory by choosing smallest type enclosing range
+		- need to define all enuerators
+	- scoped enum is always known and specifiable
+		- enum class Status; uses int as the default underlying type
+		- enum class Status : char; uses char as underlying type
+	- scoped enums can also now specify underling type in the same way (but not default int underlying type)
+	- defintion can be in a cpp file and changes won't necessarily affect all files including the declaration

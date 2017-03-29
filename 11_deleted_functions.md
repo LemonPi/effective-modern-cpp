@@ -1,0 +1,32 @@
+## deleted functions
+- **any** function may be deleted
+- in classes, prefer deleted methods to private and undefined ones
+	- catch error at compile time rather than link time for friend or own methods that use those methods
+	- make the deleted functions publically accessible
+		- compile time failure is about using deleted function rather than accessibility
+- can delete standalone functions
+	- reject overloads to prevent implicit conversions
+		- bool isLucky(int number);
+			- isLucky('a');	 implicit conversion since char is integral
+			- isLucky(true);
+			- isLucky(3.5);
+		- bool isLucky(char) = delete;	rejects chars
+		- bool isLucky(bool) = delete;
+		- bool isLucky(double) = delete; rejects floats and doubles
+		- overloading will prefer signatures that don't require conversions and those will be deleted 
+	- reject template specializations
+		- void* can't be incremented or dereferenced
+		- char* refers to C-style strings rather than individual characters
+		- for template<typename T> void processPointer(T* ptr);
+			- reject those specializations
+			- template<> void processPointer<void>(void*) = delete;
+			- template<> void processPointer<char>(char*) = delete;
+			- need to also explicitly do this for const variations
+			- template<> void processPointer<const void>(const void*) = delete;
+			- template<> void processPointer<const char>(const char*) = delete;
+			- if really thorough then also delete the volatile overloads
+			- then the other character types std::wchar_t, std::char16_t, std::char32_t, ...
+	- reject template specializations of a class method
+		- need to specialize at the namespace scope rather than inside the class
+		- class Widget {public: template<typename T> void processPointer(T* ptr){}};
+		- template<> void Widget::processPointer<void>(void*) = delete;

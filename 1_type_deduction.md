@@ -1,0 +1,66 @@
+## type deduction
+- 3 types of deduction
+	- template
+	- auto
+	- decltype
+- template deduction is the most basic and stems from C++98
+	- 2 types deduced
+		- template <typename T> void f(ParamType param)
+		- basic type T
+		- full type ParamType
+			- contains adornments like const or reference qualifiers
+	- T type depends on the form of ParamType (3 cases)
+		1. ParamType is a pointer or reference, but not a universal reference
+			- ignore reference
+			- pattern match against ParamType the rest of the argument's type
+			- for void f(T& param)
+				- int x = 27; f(x) -> T is int, param's type is int&
+				- const int cx = x; f(cx) -> T is const int, param's type is const int&
+				- const int& rx = x; f(rx) -> T is const int, param's type is const int&
+			- for void f(const T& param)
+				- f(x) -> T is int, param's type is const int&
+				- f(cx) -> T is int, param's type is const int&
+				- f(rx) -> T is int, param's type is const int&
+				- const gets matched by ParamType's const so T is just left with base type
+		2. ParamType is a universal reference
+			- if expr is lvalue, both T and ParamType become lvalue references
+			- only case where T is a reference
+			- otherwise apply rules from case 1
+			- for void f(T&& param)
+				- f(x) -> x is lvalue, T is int&, param's type is int&
+				- f(cx) -> cx is lvalue, T is const int&, param's type is const int&
+				- f(rx) -> rx is lvalue, T is const int&, param's type is const int&
+				- f(27) -> 27 is rvalue, T is int, param's type is int&&
+		3. ParamType is neither a pointer nor a reference
+			- pass by value
+			- if expr is reference type, ignore reference part
+			- ignore const and volatile
+			- for void f(T param)
+				- f(x) -> T is int, param's type is int
+				- f(cx) -> T is int, param's type is int
+				- f(rx) -> T is int, parma's type is int
+				- param is completely independent of cx and rx so their constness doesn't matter
+	- special treatment of arrays
+		- function parameter cannot be a pure array
+			- void f(int param[]) is legal, but means the same as f(int* param)
+			- pointer decay
+				- const char name[] = "Johnson Zhong"
+				- void f(T param)
+				- f(name) where name's type is const char*
+		- function parameters can be references to arrays
+			- void f(T& param)
+			- f(name) where T is const char[13] and param's type is const char (&)[13]
+			- keeps size information
+- auto deduction is nearly identical to template deduction
+	- difference is auto assumes braced initializer represents a std::initializer_list while template deduction doesn't
+	- auto in a function return type or lambda parameter uses template deduction rather than auto deduction
+- decltype deduction almost always returns the exact type of expr
+	- exception is with lvalues more complicated than names
+		- lvalue expression with type T will be reported as T&
+		- int x = 0
+		- x is lvalue, so (x) is also an lvalue
+		- decltype(x) is int, decltype((x)) is int&
+		- in C++14 problems can arise from this and decltype(auto) returns
+			- decltype(auto) f() { int x = 0; return (x); } 
+			- returns int& to local variable
+			- use static_cast<int> to address

@@ -1,0 +1,21 @@
+## noexcept
+- binary qualifier replacing C++98's exception specifications
+- guarantee function won't throw exceptions
+- just as important as const
+- allows better optimizations
+	- standard library copy constructors often use move_if_noexcept
+		- for backwards compatibility, copy construction can't throw exceptions
+		- use move semantics only if guarenteed noexcept
+- conditional noexcept
+	- whether they are noexcept depends on whether expr in noexcept(expr) is noexcept 
+- exception neutral
+	- most functions don't directly throw exceptions, but called functions may
+	- let exceptions pass up 
+- all memory deallocation and destructors are implicitly noexcept
+- contract wideness may impact whether a function should be noexcept
+	- wide contract means this function imposes no preconditions
+		- easy to apply noexcept
+	- narrow contract means defined behaviour only under preconditions
+		- can either list as noexcept and document preconditions
+			- caller's responsibility to adhere to preconditions
+		- or leave out noexcept
