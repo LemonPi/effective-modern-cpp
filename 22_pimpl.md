@@ -1,0 +1,22 @@
+## PIMPL
+- pointer to implementation idiom
+	- avoid frequent recompile with header changes
+		- decrease build time
+	- hide class implementation
+	- in header just have private: struct Impl; std::unique_ptr<Impl> pImpl;
+	- in implementation file define struct Widget::Impl
+- trivial implementation doesn't work with std::unique_ptr
+	- unique_ptr destructor needs complete type
+		- default destructor generated for Widget does not see definition of Impl's body
+		- declare but don't define destructor in header ~Widget();
+		- define in the implementation file after Impl's body
+			- Widget::~Widget(){} or
+			- Widget::~Widget() = default;
+	- same story of declaring in header and defining in implementation file after Impl's body for other operations needing complete type
+- copy constructor should deep copy Impl
+	- Widget::Widget(const Widget& rhs)
+	: pImpl(std::make_unique<Impl>(*rhs.pImpl)){}
+	- rely on automatic generation (or self definition) of Impl's copy operations
+- trivial implementation does work with std::shared_ptr
+	- shared_ptr doesn't store custom destructor as part of type
+		- consequence is the pointed to type need not be complete

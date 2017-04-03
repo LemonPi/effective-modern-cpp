@@ -1,0 +1,26 @@
+## perfect forwarding failure cases
+- cannot always forward because in the original call compilers can make deductions
+- brace initializers
+	- direct call converts initializer list to temporary object
+	- forwarding call deduces type first then compares against call's parameters
+	- solve by creating a local copy of initializer list
+		- auto il = {1,2,3}; fwd(il);
+- 0 or NULL as nullptr
+	- deduced as integral type
+	- solve by using nullptr...
+- declaration-only integral static const members
+	- classes may have declaration only integral static const member if the address of it is not needed
+		- compiler replaces all mentions of the member with its literal value
+	- forwarding is always done on references
+	- solution is to define static const member
+		- in implementation file simply redeclare (without redefining value)
+- overloaded function names and template names
+	 - direct call knows the signature of function to match against
+	 - forwarding call cannot know
+	 - solution is to specify signature of call
+	 	 - using ProcessFuncType = int (*)(int); PrcoessFuncType processer = processVal; fwd(processer);
+- bitfields
+	- non-const reference cannot bind to bitfields
+		- const reference creates copy 
+		- cannot reference sub-word/char
+	- solution is to copy bitfield value manually before call

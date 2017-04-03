@@ -1,0 +1,30 @@
+## shared_ptr
+- combine automatic resource management with predictable timing
+- has control block that holds managed-object info
+	- reference count
+		- # shared_ptr pointing to the same object
+			- destroys object upon reaching 0
+		- atomically operated on
+		- dynamically allocated
+			- except when created with std::make_shared
+		- not changed when move-constructed
+	- custom deleters
+		- not part of pointer type
+			- more flexible since shared_ptr with different deleters can exist in a single container
+- control block is created when
+	- std::make_shared is used
+		- manufactures new object to point to so there is always no previous control block for it
+	- constructed from unique-ownership (std::unique_ptr or std::auto_ptr)
+		- transfers ownership in move
+	- constructed from raw pointer
+		- assumes if there was an existing control block a std::shared_ptr would be passed
+		- constructing more than 1 std::shared_ptr from the same raw pointer is undefined behaviour
+		- use make_shared instead
+			- if not possible, pass rvalue result of new directly to constructor
+		- be careful inside classes where "this" is used to construct a shared_ptr
+			- for example, putting this inside a std::vector<std::shared_ptr<Widget>>
+			- if there already exists a shared_ptr to the Widget then undefined behaviour results
+			- inherit from std::enable_shared_from_this 
+				- pass shared_from_this() rather than this to shared_ptr constructor
+				- assumes a shared_ptr to this already exists
+					- throws exception otherwise
