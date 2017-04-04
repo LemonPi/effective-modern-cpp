@@ -1,0 +1,49 @@
+## void futures for one-shot event communiation
+- 2 asynchronous tasks need to communicate an event has occurred
+- can use std::condition_variable and std::mutex
+	- shared between tasks
+		- std::condition_variable cs;
+		- std::mutex m;
+	- detect on detecting task
+		- cv.notify_one();
+	- wait on reacting task
+		- std::unique_lock<std::mutex> lk(m); // opened in critical section to use RAII
+		- cv.wait(lk);
+	- many problems with this solution
+		- needs to use mutex
+			- not necessarily conflicting data access
+		- if detecting task notifies cv before reacting task waits, reacting task will hang
+			- for cv.notify to wake other tasks, they must be waiting on cv
+		- wait fails to account for spurious wakeups
+			- code waiting on cv may be awakened even without notification
+			- notification does not necessarily imply the waited on condition is fulfilled
+				- another task could also have been notified and "stole" the data
+- can use shared boolean flag
+	- shared between tasks
+		- std::atomic<bool> flag(false);
+	- detect on detecting task
+		- flag = true;
+	- wait on reacting task
+		- while (!flag)
+	- performance with polling
+- can combine condition variable and flag
+	- shared between tasks
+		- std::condition_variable cs;
+		- std::mutex m;
+		- bool flag;	// not std::atomic
+	- detect
+		- { std::lock_guard<std::mutex> lk(m); flag = true; }
+		- cv.notify_one();
+	- react
+		- { std::unique_lock<std::mutex> lk(m); cv.wait(lk, []{return flag;}); }
+	- no technical problems apart from complexity
+- can use future and promise
+	- shared between tasks
+		- std::promise<void> p;
+	- detect
+		- std::thread t([] { p.get_future().wait(); react(); });
+			- create thread suspended until future is set
+		- p.set_value();
+	- react
+		- void react();
+	- can only call once

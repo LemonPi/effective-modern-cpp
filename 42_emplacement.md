@@ -1,0 +1,24 @@
+## emplace
+- alternative to insert/push_back/push_front
+	- takes constructor arguments rather than constructed object
+	- perfect forwards and constructs in place
+	- most of the time more efficient (see following conditions)
+		- added value is constructed rather than assigned into the conatiner
+			- emplace_back will always construct
+			- emplace anywhere other than back will usually assign
+				- creates temporary to assign from
+				- no more efficient than insert
+			- node-based containers
+				- any std container other than std::vector, std::deque, std::string
+		- argument passed in is different from the contained type
+			- if object itself is passed then no temporary has to be created with insert
+		- container is unlikely to reject new value
+			- some containers reject if it's a duplicate (std::set for example)
+		- object does not manage any resources
+			- deferred construction makes emplace exception unsafe
+			- exception between the creation of the resource and passing on of it to the managing object will leak
+	- never less efficient than insertion counterpart
+- one danger is bypassing explicit constructors
+	- point of explicit constructors is to prevent implicit construction from this type
+	- push_back will prevent implicit construction of temporary using argument
+	- emplace_back will forward it to the explicit constructor

@@ -1,0 +1,24 @@
+## pass by value
+- occassionally useful when taking copyable parameters that are cheap to move and always copied
+- API choices
+	- overloading const reference for lvalue and another for rvalue
+		- void f(const std::string& n) { names.push_back(n); }
+		- void f(std::string&& n) { names.push_back(std::move(n)); }
+		- 2 functions to maintain... (no deal)
+	- universal reference
+		- template<typename T> void f(T&& n) { names.push_back(std::forward(n)); }
+		- most efficient since avoids construct of temporaries for non-string types
+		- may generate the most code bloating though
+	- by value
+		- void f(std::string n) { names.push_back(std::move(n)); }
+		- always copied in C++98, but cheaper in C++11
+		- parameter n construction
+			- in C++98 always copy constructed
+			- in C++11 will be move constructed if argument to instantiate was an rvalue
+		- move into names
+			- in C++98 always copy constructed
+			- in C++11 always move constructed from local
+		- always 1 move operation more expensive than the by reference methods
+		- should only use if parameter will always be copied
+			- if there's extra logic in deciding whether it'll be copied or not, then we always do extra work
+		- costs are greater if the copy is done via copy assignment
